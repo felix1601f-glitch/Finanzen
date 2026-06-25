@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeinVermögen</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#0d1117;--surf:#161b22;--surf2:#1e2530;--border:#2a3240;--accent:#00d4a8;--purple:#7c6bff;--red:#ff5e6d;--yellow:#ffc857;--text:#e6edf3;--text2:#8b949e;}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+input,select,button{font-family:inherit;}
+/* LOGIN */
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:radial-gradient(ellipse at 50% 0%,rgba(0,212,168,.07) 0%,transparent 60%);}
+.login-logo{font-size:28px;font-weight:800;margin-bottom:6px;}
+.login-logo span{color:var(--accent);}
+.login-card{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:360px;margin-top:16px;}
+.login-card h2{font-size:18px;font-weight:700;margin-bottom:22px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.field input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 12px;font-size:13px;outline:none;}
+.field input:focus{border-color:var(--accent);}
+.btn-login{width:100%;background:var(--accent);color:var(--bg);border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;}
+.login-err{color:var(--red);font-size:13px;margin-top:10px;text-align:center;}
+.login-hint{text-align:center;margin-top:14px;font-size:12px;color:#3d444d;}
+/* APP */
+#app{display:none;}
+.topbar{background:var(--surf);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+.topbar-logo{font-size:18px;font-weight:800;}
+.topbar-logo span{color:var(--accent);}
+nav{display:flex;background:var(--surf);border-bottom:1px solid var(--border);overflow-x:auto;}
+.nav-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--text2);padding:13px 14px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.page{display:none;padding:24px 16px;max-width:1100px;margin:0 auto;}
+.page.active{display:block;}
+/* CARDS */
+.card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;}
+.kpi-card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.kpi-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.kpi-value{font-size:22px;font-weight:700;letter-spacing:-.5px;}
+.kpi-sub{font-size:12px;color:var(--text2);margin-top:4px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:600px){.two-col{grid-template-columns:1fr;}}
+/* SECTION TITLE */
+.sec-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.sec-title h2{font-size:16px;font-weight:700;}
+.btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+/* BUTTONS */
+.btn-add{background:rgba(0,212,168,.1);border:1px solid rgba(0,212,168,.3);color:var(--accent);border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-add:hover{background:rgba(0,212,168,.18);}
+.btn-purple{background:rgba(124,107,255,.1);border:1px solid rgba(124,107,255,.3);color:var(--purple);border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-sm{background:none;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;}
+.btn-danger{background:none;border:1px solid var(--border);color:var(--red);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;}
+.btn-yellow{background:none;border:1px solid var(--border);color:var(--yellow);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;}
+.btn-green{background:none;border:1px solid var(--border);color:var(--accent);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;}
+/* TABLE */
+table{width:100%;border-collapse:collapse;}
+th{font-size:11px;color:var(--text2);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;}
+td{padding:10px 8px;font-size:13px;border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+/* FORM */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:500px){.form-row{grid-template-columns:1fr;}}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:11px;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.form-group input,.form-group select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 12px;font-size:13px;outline:none;}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent);}
+/* BADGE */
+.badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;}
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:20px;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+/* CHART */
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:100px;}
+.bar-wrap{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px;}
+.bar{background:var(--purple);border-radius:4px 4px 0 0;width:100%;opacity:.8;}
+.bar-label{font-size:10px;color:var(--text2);}
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+/* PROGRESS */
+.progress-bar{background:var(--bg);border-radius:20px;height:5px;margin-top:4px;}
+.progress-fill{height:5px;border-radius:20px;}
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--text2);font-size:14px;}
+.empty-icon{font-size:32px;margin-bottom:12px;}
+/* COLORS */
+.green{color:var(--accent);}
+.red{color:var(--red);}
+.purple{color:var(--purple);}
+.yellow{color:var(--yellow);}
+.muted{color:var(--text2);}
+/* INFO BOX */
+.info-box{background:var(--surf2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2);margin-bottom:14px;}
+/* TOPBAR RIGHT */
+.topbar-right{display:flex;align-items:center;gap:10px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-logo">Mein<span>Vermögen</span></div>
+  <div style="font-size:14px;color:var(--text2)">Dein persönliches Finanz-Dashboard</div>
+  <div class="login-card">
+    <h2>Anmelden</h2>
+    <div class="field"><label>Benutzername</label><input type="text" id="lu" placeholder="z.B. max"></div>
+    <div class="field"><label>Passwort</label><input type="password" id="lp" placeholder="Dein Passwort"></div>
+    <button class="btn-login" id="login-btn">Anmelden</button>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-hint">Erstanmeldung: Zugangsdaten frei wählen – werden gespeichert.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">Mein<span>Vermögen</span></div>
+    <div class="topbar-right">
+      <span style="font-size:13px;color:var(--text2)" id="topbar-user"></span>
+      <button class="btn-sm" onclick="doLogout()">Abmelden</button>
+    </div>
+  </div>
+  <nav>
+    <button class="nav-btn active" onclick="showPage('dashboard',this)">📊 Übersicht</button>
+    <button class="nav-btn" onclick="showPage('accounts',this)">🏦 Konten</button>
+    <button class="nav-btn" onclick="showPage('stocks',this)">📈 Depot</button>
+    <button class="nav-btn" onclick="showPage('expenses',this)">💳 Ausgaben</button>
+    <button class="nav-btn" onclick="showPage('settings',this)">⚙️ Einstellungen</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:16px">📈 Vermögensentwicklung</div>
+      <div id="wealth-chart"></div>
+    </div>
+    <div class="two-col">
+      <div class="card"><div style="font-size:14px;font-weight:600;margin-bottom:16px">Vermögensverteilung</div><div class="donut-wrap"><svg id="donut-svg" width="120" height="120"></svg><div id="donut-legend"></div></div></div>
+      <div class="card"><div style="font-size:14px;font-weight:600;margin-bottom:16px">Ausgaben letzte 6 Monate</div><div class="bar-chart" id="bar-chart"></div></div>
+    </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:14px">Letzte Transaktionen</div>
+      <table><thead><tr><th>Datum</th><th>Beschreibung</th><th>Kategorie</th><th>Betrag</th></tr></thead><tbody id="recent-tbody"></tbody></table>
+    </div>
+  </div>
+
+  <!-- KONTEN -->
+  <div class="page" id="page-accounts">
+    <div class="sec-title"><h2>Bankkonten</h2><button class="btn-add" onclick="openModal('modal-account')">+ Konto hinzufügen</button></div>
+    <div class="card"><table><thead><tr><th>Bank</th><th>Art</th><th>IBAN</th><th>Saldo</th><th></th></tr></thead><tbody id="accounts-tbody"></tbody></table></div>
+  </div>
+
+  <!-- DEPOT -->
+  <div class="page" id="page-stocks">
+    <div class="sec-title">
+      <h2>Depot</h2>
+      <div class="btn-row">
+        <span id="fetch-msg" style="font-size:12px;color:var(--text2)"></span>
+        <button class="btn-purple" id="fetch-btn" onclick="fetchAllPrices()">🔄 Kurse aktualisieren</button>
+        <button class="btn-add" onclick="openModal('modal-stock')">+ Position hinzufügen</button>
+      </div>
+    </div>
+    <div class="card" style="overflow-x:auto"><table><thead><tr><th>Name</th><th>Typ</th><th>Stück</th><th>Kaufkurs</th><th>Akt. Kurs</th><th>Wert</th><th>G/V</th><th></th></tr></thead><tbody id="stocks-tbody"></tbody></table></div>
+    <div class="kpi-grid" id="depot-summary"></div>
+  </div>
+
+  <!-- AUSGABEN -->
+  <div class="page" id="page-expenses">
+    <div class="sec-title"><h2>Ausgaben & Einnahmen</h2><button class="btn-add" onclick="openModal('modal-expense')">+ Transaktion</button></div>
+    <div class="two-col">
+      <div class="card"><div style="font-size:14px;font-weight:600;margin-bottom:16px">Kategorien</div><div id="cat-breakdown"></div></div>
+      <div class="card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:14px">Monatsfilter</div>
+        <div class="form-group"><input type="month" id="month-filter" onchange="renderExpenses()"></div>
+        <div id="month-summary"></div>
+      </div>
+    </div>
+    <div class="card" style="overflow-x:auto"><table><thead><tr><th>Datum</th><th>Beschreibung</th><th>Kategorie</th><th>Typ</th><th>Betrag</th><th></th></tr></thead><tbody id="expenses-tbody"></tbody></table></div>
+  </div>
+
+  <!-- EINSTELLUNGEN -->
+  <div class="page" id="page-settings">
+    <div class="card" style="max-width:480px">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Konto</div>
+      <div class="form-group"><label>Anzeigename</label><input type="text" id="s-name" placeholder="Dein Name"></div>
+      <div class="form-group"><label>Neues Passwort</label><input type="password" id="s-p1" placeholder="Neues Passwort"></div>
+      <div class="form-group"><label>Passwort bestätigen</label><input type="password" id="s-p2" placeholder="Wiederholen"></div>
+      <button class="btn-add" onclick="saveSettings()">Speichern</button>
+      <div id="s-msg" style="margin-top:10px;font-size:13px"></div>
+      <div style="border-top:1px solid var(--border);margin:24px 0"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Daten</div>
+      <button class="btn-danger" onclick="clearAll()">Alle Daten löschen</button>
+      <div style="margin-top:20px;font-size:13px;color:var(--text2);line-height:1.7">Alle Daten werden <strong style="color:var(--text)">dauerhaft lokal</strong> gespeichert. Kein Server, keine Weitergabe.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-account">
+  <div class="modal">
+    <h3>Konto hinzufügen</h3>
+    <div class="form-group"><label>Bank / Institut</label><input type="text" id="a-bank" placeholder="z.B. DKB, ING, Sparkasse"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Kontoart</label><select id="a-type"><option>Girokonto</option><option>Tagesgeld</option><option>Festgeld</option><option>Depot</option><option>Bausparer</option><option>Sonstiges</option></select></div>
+      <div class="form-group"><label>Saldo (€)</label><input type="number" id="a-balance" placeholder="0.00"></div>
+    </div>
+    <div class="form-group"><label>IBAN (letzte 4 Stellen)</label><input type="text" id="a-iban" maxlength="4" placeholder="1234"></div>
+    <div class="modal-footer"><button class="btn-sm" onclick="closeModal('modal-account')">Abbrechen</button><button class="btn-add" onclick="addAccount()">Speichern</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-stock">
+  <div class="modal">
+    <h3>Position hinzufügen</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Name</label><input type="text" id="st-name" placeholder="z.B. Apple"></div>
+      <div class="form-group"><label>Ticker</label><input type="text" id="st-ticker" placeholder="AAPL"></div>
+    </div>
+    <div class="info-box">💡 Ticker-Beispiele: AAPL, TSLA, IWDA.AS, VWCE.DE, BTC-USD</div>
+    <div class="form-row">
+      <div class="form-group"><label>Typ</label><select id="st-type"><option>Aktie</option><option>ETF</option><option>Fonds</option><option>Anleihe</option><option>Krypto</option></select></div>
+      <div class="form-group"><label>Stück / Anteile</label><input type="number" id="st-qty" placeholder="10"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Kaufkurs (€)</label><input type="number" id="st-buy" placeholder="150.00"></div>
+      <div class="form-group"><label>Aktueller Kurs (€)</label><input type="number" id="st-cur" placeholder="170.00"></div>
+    </div>
+    <div class="modal-footer"><button class="btn-sm" onclick="closeModal('modal-stock')">Abbrechen</button><button class="btn-add" onclick="addStock()">Speichern</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-editstock">
+  <div class="modal">
+    <h3 id="edit-title">Position bearbeiten</h3>
+    <div id="edit-stock-info" style="font-size:12px;color:var(--text2);margin-bottom:16px"></div>
+    <div id="edit-price-section">
+      <div class="form-group"><label>Neuer Kurs (€)</label><input type="number" id="edit-price" placeholder="0.00"></div>
+    </div>
+    <div id="edit-buy-section" style="display:none">
+      <div class="form-group"><label>Anzahl Anteile</label><input type="number" id="edit-qty" placeholder="z.B. 5" oninput="updateEditInfo()"></div>
+      <div class="form-group"><label>Kaufkurs (€)</label><input type="number" id="edit-buyprice" placeholder="0.00" oninput="updateEditInfo()"></div>
+      <div class="info-box" id="edit-buy-info"></div>
+    </div>
+    <div id="edit-sell-section" style="display:none">
+      <div class="form-group"><label>Anzahl Anteile verkaufen</label><input type="number" id="edit-sell-qty" placeholder="0" oninput="updateSellInfo()"></div>
+      <div class="info-box" id="edit-sell-info"></div>
+    </div>
+    <div class="modal-footer"><button class="btn-sm" onclick="closeModal('modal-editstock')">Abbrechen</button><button class="btn-add" id="edit-save-btn" onclick="saveEdit()">Speichern</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-expense">
+  <div class="modal">
+    <h3>Transaktion hinzufügen</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Datum</label><input type="date" id="e-date"></div>
+      <div class="form-group"><label>Typ</label><select id="e-type"><option value="expense">Ausgabe</option><option value="income">Einnahme</option></select></div>
+    </div>
+    <div class="form-group"><label>Beschreibung</label><input type="text" id="e-desc" placeholder="z.B. Rewe, Miete, Gehalt…"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Betrag (€)</label><input type="number" id="e-amount" placeholder="0.00"></div>
+      <div class="form-group"><label>Kategorie</label><select id="e-cat"></select></div>
+    </div>
+    <div class="form-group"><label>Konto</label><select id="e-account"></select></div>
+    <div class="modal-footer"><button class="btn-sm" onclick="closeModal('modal-expense')">Abbrechen</button><button class="btn-add" onclick="addExpense()">Speichern</button></div>
+  </div>
+</div>
+
+<script>
+// ── Constants ──
+const CAT_COLORS={Wohnen:"#7c6bff",Lebensmittel:"#00d4a8",Mobilität:"#ffc857",Restaurant:"#ff8c42",Shopping:"#ff5e6d",Gesundheit:"#36b5d8",Freizeit:"#a8e063",Sparen:"#00d4a8",Gehalt:"#00d4a8",Investition:"#7c6bff",Sonstiges:"#8b949e"};
+const CATS=Object.keys(CAT_COLORS);
+
+// ── State ──
+let accounts=[],stocks=[],expenses=[],snapshots=[],currentUser="",editStockData=null,editMode="price";
+
+// ── Storage ──
+function save(key,val){try{localStorage.setItem("mv_"+key,JSON.stringify(val));}catch{}}
+function load(key){try{const r=localStorage.getItem("mv_"+key);return r?JSON.parse(r):null;}catch{return null;}}
+
+// ── Format ──
+function fmt(n,dec=2){return Number(n).toLocaleString("de-DE",{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function fmtEur(n){return fmt(n)+" €";}
+function today(){return new Date().toISOString().split("T")[0];}
+function thisMonth(){return new Date().toISOString().slice(0,7);}
+
+// ── Auth ──
+document.getElementById("login-btn").addEventListener("click",doLogin);
+document.getElementById("lp").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+
+function doLogin(){
+  const u=document.getElementById("lu").value.trim().toLowerCase();
+  const p=document.getElementById("lp").value;
+  if(!u||!p){document.getElementById("login-err").textContent="Bitte alle Felder ausfüllen.";return;}
+  const users=load("users")||{};
+  if(!users[u]){users[u]={password:p,displayName:u};save("users",users);}
+  else if(users[u].password!==p){document.getElementById("login-err").textContent="Falsches Passwort.";return;}
+  currentUser=users[u].displayName||u;
+  document.getElementById("topbar-user").textContent=currentUser;
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("app").style.display="block";
+  loadData();
+  renderAll();
+  takeSnapshot();
+}
+
+function doLogout(){
+  document.getElementById("app").style.display="none";
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("lu").value="";
+  document.getElementById("lp").value="";
+}
+
+// ── Load Data ──
+function loadData(){
+  accounts=load("accounts")||[];
+  stocks=load("stocks")||[];
+  expenses=load("expenses")||[];
+  snapshots=load("snapshots")||[];
+}
+
+// ── Snapshot ──
+function takeSnapshot(){
+  const bankBal=accounts.reduce((s,a)=>s+a.balance,0);
+  const stockVal=stocks.reduce((s,st)=>s+st.qty*st.current,0);
+  const total=bankBal+stockVal;
+  if(total===0)return;
+  const t=today();
+  const last=snapshots[snapshots.length-1];
+  if(last&&last.date===t){snapshots[snapshots.length-1]={date:t,total,bank:bankBal,depot:stockVal};}
+  else{snapshots.push({date:t,total,bank:bankBal,depot:stockVal});}
+  if(snapshots.length>90)snapshots=snapshots.slice(-90);
+  save("snapshots",snapshots);
+}
+
+// ── Nav ──
+function showPage(id,btn){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("page-"+id).classList.add("active");
+  btn.classList.add("active");
+  renderAll();
+}
+
+function openModal(id){
+  document.getElementById(id).classList.add("open");
+  if(id==="modal-expense"){
+    document.getElementById("e-date").value=today();
+    const sel=document.getElementById("e-account");
+    sel.innerHTML='<option value="">Kein Konto</option>';
+    accounts.forEach(a=>{const o=document.createElement("option");o.value=a.id;o.textContent=a.bank+" – "+a.type;sel.appendChild(o);});
+    const catSel=document.getElementById("e-cat");
+    catSel.innerHTML="";
+    CATS.forEach(c=>{const o=document.createElement("option");o.textContent=c;catSel.appendChild(o);});
+  }
+}
+function closeModal(id){document.getElementById(id).classList.remove("open");}
+document.querySelectorAll(".modal-overlay").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open");}));
+
+// ── Accounts ──
+function addAccount(){
+  const bank=document.getElementById("a-bank").value.trim();
+  if(!bank)return;
+  accounts.push({id:Date.now(),bank,type:document.getElementById("a-type").value,balance:parseFloat(document.getElementById("a-balance").value)||0,iban:document.getElementById("a-iban").value.trim()});
+  save("accounts",accounts);closeModal("modal-account");renderAll();takeSnapshot();
+  document.getElementById("a-bank").value="";document.getElementById("a-balance").value="";document.getElementById("a-iban").value="";
+}
+function delAccount(id){if(!confirm("Konto löschen?"))return;accounts=accounts.filter(a=>a.id!==id);save("accounts",accounts);renderAll();}
+
+function renderAccounts(){
+  const tb=document.getElementById("accounts-tbody");
+  if(!accounts.length){tb.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-icon">🏦</div>Noch kein Konto angelegt.</div></td></tr>';return;}
+  tb.innerHTML=accounts.map(a=>`<tr>
+    <td><strong>${a.bank}</strong></td>
+    <td><span class="badge" style="background:#7c6bff22;color:#7c6bff">${a.type}</span></td>
+    <td class="muted">${a.iban?"****"+a.iban:"–"}</td>
+    <td class="${a.balance>=0?"green":"red"}" style="font-weight:600">${fmtEur(a.balance)}</td>
+    <td><button class="btn-danger" onclick="delAccount(${a.id})">Löschen</button></td>
+  </tr>`).join("");
+}
+
+// ── Stocks ──
+function addStock(){
+  const name=document.getElementById("st-name").value.trim();
+  const qty=parseFloat(document.getElementById("st-qty").value);
+  if(!name||!qty)return;
+  const buy=parseFloat(document.getElementById("st-buy").value)||0;
+  const cur=parseFloat(document.getElementById("st-cur").value)||buy;
+  stocks.push({id:Date.now(),name,ticker:document.getElementById("st-ticker").value.trim().toUpperCase(),type:document.getElementById("st-type").value,qty,buy,current:cur});
+  save("stocks",stocks);closeModal("modal-stock");renderAll();takeSnapshot();
+  document.getElementById("st-name").value="";document.getElementById("st-ticker").value="";document.getElementById("st-qty").value="";document.getElementById("st-buy").value="";document.getElementById("st-cur").value="";
+}
+function delStock(id){if(!confirm("Position löschen?"))return;stocks=stocks.filter(s=>s.id!==id);save("stocks",stocks);renderAll();}
+
+function openEdit(id,mode){
+  const s=stocks.find(x=>x.id===id);if(!s)return;
+  editStockData=s;editMode=mode;
+  document.getElementById("edit-title").textContent=mode==="price"?"Kurs aktualisieren":mode==="buy"?"Anteile kaufen":"Anteile verkaufen";
+  document.getElementById("edit-stock-info").textContent=`${s.name}${s.ticker?" ("+s.ticker+")":""} · Aktuell: ${fmt(s.qty,4)} Stück · Kurs: ${fmtEur(s.current)}`;
+  document.getElementById("edit-price-section").style.display=mode==="price"?"block":"none";
+  document.getElementById("edit-buy-section").style.display=mode==="buy"?"block":"none";
+  document.getElementById("edit-sell-section").style.display=mode==="sell"?"block":"none";
+  document.getElementById("edit-price").value=s.current;
+  document.getElementById("edit-qty").value="";
+  document.getElementById("edit-buyprice").value=s.current;
+  document.getElementById("edit-sell-qty").value="";
+  document.getElementById("edit-buy-info").textContent="";
+  document.getElementById("edit-sell-info").textContent="";
+  document.getElementById("edit-save-btn").style.color=mode==="sell"?"var(--yellow)":"var(--accent)";
+  document.getElementById("modal-editstock").classList.add("open");
+}
+
+function updateEditInfo(){
+  if(!editStockData)return;
+  const qty=parseFloat(document.getElementById("edit-qty").value)||0;
+  const price=parseFloat(document.getElementById("edit-buyprice").value)||0;
+  if(qty&&price){
+    const newQty=editStockData.qty+qty;
+    const newAvg=(editStockData.buy*editStockData.qty+price*qty)/newQty;
+    document.getElementById("edit-buy-info").textContent=`Neuer Ø Kaufkurs: ${fmtEur(newAvg)} · Gesamtanteile: ${fmt(newQty,4)}`;
+  }
+}
+function updateSellInfo(){
+  if(!editStockData)return;
+  const qty=parseFloat(document.getElementById("edit-sell-qty").value)||0;
+  if(qty){document.getElementById("edit-sell-info").textContent=`Verkaufswert: ${fmtEur(qty*editStockData.current)} · Verbleibend: ${fmt(editStockData.qty-qty,4)} Stück`;}
+}
+
+function saveEdit(){
+  if(!editStockData)return;
+  if(editMode==="price"){
+    const p=parseFloat(document.getElementById("edit-price").value);
+    if(!p)return;
+    stocks=stocks.map(s=>s.id===editStockData.id?{...s,current:p}:s);
+  } else if(editMode==="buy"){
+    const qty=parseFloat(document.getElementById("edit-qty").value)||0;
+    const price=parseFloat(document.getElementById("edit-buyprice").value)||editStockData.current;
+    if(qty<=0)return;
+    const newQty=editStockData.qty+qty;
+    const newAvg=(editStockData.buy*editStockData.qty+price*qty)/newQty;
+    stocks=stocks.map(s=>s.id===editStockData.id?{...s,qty:newQty,buy:newAvg}:s);
+  } else if(editMode==="sell"){
+    const qty=parseFloat(document.getElementById("edit-sell-qty").value)||0;
+    if(qty<=0||qty>editStockData.qty)return;
+    if(qty===editStockData.qty){stocks=stocks.filter(s=>s.id!==editStockData.id);}
+    else{stocks=stocks.map(s=>s.id===editStockData.id?{...s,qty:s.qty-qty}:s);}
+  }
+  save("stocks",stocks);closeModal("modal-editstock");renderAll();takeSnapshot();editStockData=null;
+}
+
+function renderStocks(){
+  const tb=document.getElementById("stocks-tbody");
+  if(!stocks.length){tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">📈</div>Noch keine Positionen.</div></td></tr>';document.getElementById("depot-summary").innerHTML="";return;}
+  let totalVal=0,totalCost=0;
+  tb.innerHTML=stocks.map(s=>{
+    const val=s.qty*s.current,cost=s.qty*s.buy,diff=val-cost,pct=cost?diff/cost*100:0;
+    totalVal+=val;totalCost+=cost;
+    const typeColor=s.type==="ETF"?"#00d4a8":"#ffc857";
+    return`<tr>
+      <td><strong>${s.name}</strong>${s.ticker?` <span class="muted" style="font-size:11px">${s.ticker}</span>`:""}</td>
+      <td><span class="badge" style="background:${typeColor}22;color:${typeColor}">${s.type}</span></td>
+      <td>${fmt(s.qty,4)}</td>
+      <td>${fmtEur(s.buy)}</td>
+      <td>${fmtEur(s.current)}</td>
+      <td><strong>${fmtEur(val)}</strong></td>
+      <td class="${diff>=0?"green":"red"}">${diff>=0?"+":""}${fmtEur(diff)} (${diff>=0?"+":""}${fmt(pct,1)}%)</td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="btn-green" onclick="openEdit(${s.id},'price')">Kurs</button>
+        <button class="btn-green" onclick="openEdit(${s.id},'buy')">Kaufen</button>
+        <button class="btn-yellow" onclick="openEdit(${s.id},'sell')">Verkaufen</button>
+        <button class="btn-danger" onclick="delStock(${s.id})">Löschen</button>
+      </div></td>
+    </tr>`;
+  }).join("");
+  const gv=totalVal-totalCost,gvPct=totalCost?gv/totalCost*100:0;
+  document.getElementById("depot-summary").innerHTML=`
+    <div class="kpi-card"><div class="kpi-label">Depotwert</div><div class="kpi-value green">${fmtEur(totalVal)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Einstandswert</div><div class="kpi-value">${fmtEur(totalCost)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Gesamtgewinn/-verlust</div><div class="kpi-value ${gv>=0?"green":"red"}">${gv>=0?"+":""}${fmtEur(gv)}</div><div class="kpi-sub">${gv>=0?"+":""}${fmt(gvPct,2)}%</div></div>`;
+}
+
+// ── Auto Fetch Prices ──
+async function fetchAllPrices(){
+  const withTicker=stocks.filter(s=>s.ticker&&s.ticker.trim());
+  const msg=document.getElementById("fetch-msg");
+  const btn=document.getElementById("fetch-btn");
+  if(!withTicker.length){msg.textContent="Keine Ticker hinterlegt.";setTimeout(()=>msg.textContent="",3000);return;}
+  btn.textContent="⏳ Laden…";btn.disabled=true;msg.textContent="";
+  let ok=0,fail=0;
+  for(const s of withTicker){
+    try{
+      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(s.ticker)}?interval=1d&range=1d`;
+      const res=await fetch(url);
+      const data=await res.json();
+      const price=data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+      if(price){stocks=stocks.map(x=>x.id===s.id?{...x,current:price}:x);ok++;}
+      else fail++;
+    }catch{fail++;}
+  }
+  save("stocks",stocks);renderAll();takeSnapshot();
+  btn.textContent="🔄 Kurse aktualisieren";btn.disabled=false;
+  msg.textContent=`✓ ${ok} aktualisiert${fail?`, ${fail} fehlgeschlagen`:""}`;
+  msg.style.color=ok>0?"var(--accent)":"var(--red)";
+  setTimeout(()=>msg.textContent="",4000);
+}
+
+// ── Expenses ──
+function addExpense(){
+  const date=document.getElementById("e-date").value;
+  const desc=document.getElementById("e-desc").value.trim();
+  const amount=parseFloat(document.getElementById("e-amount").value);
+  const type=document.getElementById("e-type").value;
+  const accountId=document.getElementById("e-account").value;
+  if(!date||!desc||!amount)return;
+  expenses.push({id:Date.now(),date,type,desc,amount,cat:document.getElementById("e-cat").value,accountId});
+  expenses.sort((a,b)=>b.date.localeCompare(a.date));
+  if(accountId){
+    accounts=accounts.map(a=>String(a.id)===String(accountId)?{...a,balance:a.balance+(type==="income"?amount:-amount)}:a);
+    save("accounts",accounts);
+  }
+  save("expenses",expenses);closeModal("modal-expense");renderAll();takeSnapshot();
+  document.getElementById("e-desc").value="";document.getElementById("e-amount").value="";
+}
+function delExpense(id){
+  const e=expenses.find(x=>x.id===id);
+  if(e&&e.accountId){
+    accounts=accounts.map(a=>String(a.id)===String(e.accountId)?{...a,balance:a.balance+(e.type==="income"?-e.amount:e.amount)}:a);
+    save("accounts",accounts);
+  }
+  expenses=expenses.filter(x=>x.id!==id);
+  save("expenses",expenses);renderAll();
+}
+
+function renderExpenses(){
+  const mf=document.getElementById("month-filter").value;
+  const filtered=mf?expenses.filter(e=>e.date.startsWith(mf)):expenses;
+  const tb=document.getElementById("expenses-tbody");
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="6"><div class="empty"><div class="empty-icon">💳</div>Keine Transaktionen.</div></td></tr>';}
+  else{tb.innerHTML=filtered.map(e=>{
+    const acc=accounts.find(a=>String(a.id)===String(e.accountId));
+    const c=CAT_COLORS[e.cat]||"#8b949e";
+    return`<tr>
+      <td class="muted">${e.date}</td>
+      <td>${e.desc}</td>
+      <td><span class="badge" style="background:${c}22;color:${c}">${e.cat}</span></td>
+      <td><span class="badge" style="background:${e.type==="income"?"#00d4a822":"#ff5e6d22"};color:${e.type==="income"?"#00d4a8":"#ff5e6d"}">${e.type==="income"?"Einnahme":"Ausgabe"}</span></td>
+      <td class="${e.type==="income"?"green":"red"}" style="font-weight:600">${e.type==="income"?"+":"-"}${fmtEur(e.amount)}</td>
+      <td><button class="btn-danger" onclick="delExpense(${e.id})">Löschen</button></td>
+    </tr>`;}).join("");}
+  // Categories
+  const exps=filtered.filter(e=>e.type==="expense");
+  const total=exps.reduce((s,e)=>s+e.amount,0);
+  const bycat={};exps.forEach(e=>{bycat[e.cat]=(bycat[e.cat]||0)+e.amount;});
+  const sorted=Object.entries(bycat).sort((a,b)=>b[1]-a[1]);
+  const cb=document.getElementById("cat-breakdown");
+  if(!sorted.length){cb.innerHTML='<div style="font-size:13px;color:var(--text2)">Keine Ausgaben.</div>';}
+  else{cb.innerHTML=sorted.map(([cat,amt])=>`<div style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${cat}</span><span class="muted">${fmtEur(amt)} (${fmt(amt/total*100,0)}%)</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${amt/total*100}%;background:${CAT_COLORS[cat]||"#7c6bff"}"></div></div>
+  </div>`).join("");}
+  // Month summary
+  const inc=filtered.filter(e=>e.type==="income").reduce((s,e)=>s+e.amount,0);
+  const bal=inc-total;
+  document.getElementById("month-summary").innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span class="muted">Einnahmen</span><span class="green">+${fmtEur(inc)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span class="muted">Ausgaben</span><span class="red">-${fmtEur(total)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;border-top:1px solid var(--border);padding-top:10px;margin-top:4px"><span>Bilanz</span><span class="${bal>=0?"green":"red"}">${bal>=0?"+":""}${fmtEur(bal)}</span></div>
+    </div>`;
+}
+
+// ── Dashboard ──
+function renderDashboard(){
+  const bankBal=accounts.reduce((s,a)=>s+a.balance,0);
+  const stockVal=stocks.reduce((s,st)=>s+st.qty*st.current,0);
+  const stockCost=stocks.reduce((s,st)=>s+st.qty*st.buy,0);
+  const total=bankBal+stockVal;
+  const gv=stockVal-stockCost;
+  const mExp=expenses.filter(e=>e.type==="expense"&&e.date.startsWith(thisMonth())).reduce((s,e)=>s+e.amount,0);
+  const mInc=expenses.filter(e=>e.type==="income"&&e.date.startsWith(thisMonth())).reduce((s,e)=>s+e.amount,0);
+  document.getElementById("kpi-grid").innerHTML=`
+    <div class="kpi-card"><div class="kpi-label">Gesamtvermögen</div><div class="kpi-value green">${fmtEur(total)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Konten</div><div class="kpi-value">${fmtEur(bankBal)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Depotwert</div><div class="kpi-value purple">${fmtEur(stockVal)}</div>${gv!==0?`<div class="kpi-sub ${gv>=0?"green":"red"}">${gv>=0?"▲ +":"▼ "}${fmtEur(Math.abs(gv))} G/V</div>`:""}    </div>
+    <div class="kpi-card"><div class="kpi-label">Ausgaben (Monat)</div><div class="kpi-value red">${fmtEur(mExp)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Einnahmen (Monat)</div><div class="kpi-value green">${fmtEur(mInc)}</div></div>`;
+  renderWealthChart();
+  renderDonut(bankBal,stockVal);
+  renderBarChart();
+  // Recent
+  const rb=document.getElementById("recent-tbody");
+  if(!expenses.length){rb.innerHTML='<tr><td colspan="4"><div class="empty"><div class="empty-icon">📋</div>Noch keine Transaktionen.</div></td></tr>';}
+  else{rb.innerHTML=expenses.slice(0,8).map(e=>{const c=CAT_COLORS[e.cat]||"#8b949e";return`<tr><td class="muted">${e.date}</td><td>${e.desc}</td><td><span class="badge" style="background:${c}22;color:${c}">${e.cat}</span></td><td class="${e.type==="income"?"green":"red"}" style="font-weight:600">${e.type==="income"?"+":"-"}${fmtEur(e.amount)}</td></tr>`;}).join("");}
+}
+
+function renderWealthChart(){
+  const el=document.getElementById("wealth-chart");
+  if(!snapshots||snapshots.length<2){el.innerHTML='<div style="color:var(--text2);font-size:13px;padding:20px 0">Noch zu wenig Daten – täglich öffnen um den Verlauf aufzubauen.</div>';return;}
+  const vals=snapshots.map(s=>s.total);
+  const min=Math.min(...vals),max=Math.max(...vals),range=max-min||1;
+  const W=500,H=120,pad=10;
+  const pts=snapshots.map((s,i)=>{
+    const x=pad+(i/(snapshots.length-1))*(W-pad*2);
+    const y=H-pad-((s.total-min)/range)*(H-pad*2);
+    return`${x},${y}`;
+  }).join(" ");
+  const first=snapshots[0].total,last=snapshots[snapshots.length-1].total,up=last>=first;
+  const color=up?"#00d4a8":"#ff5e6d";
+  const lastX=pad+(snapshots.length-1)/(snapshots.length-1)*(W-pad*2);
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:12px">
+      <span class="muted">${snapshots[0].date}</span>
+      <span style="font-weight:600;color:${color}">${up?"▲":"▼"} ${fmtEur(Math.abs(last-first))} (${fmt((last-first)/first*100,2)}%)</span>
+      <span class="muted">${snapshots[snapshots.length-1].date}</span>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:120px">
+      <defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity=".3"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+      <polygon points="${pts} ${lastX},${H-pad} ${pad},${H-pad}" fill="url(#wg)"/>
+      <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
+      ${snapshots.map((s,i)=>{const x=pad+(i/(snapshots.length-1))*(W-pad*2);const y=H-pad-((s.total-min)/range)*(H-pad*2);return`<circle cx="${x}" cy="${y}" r="3" fill="${color}"/>`;}).join("")}
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-top:4px"><span>${fmtEur(min)}</span><span>${fmtEur(max)}</span></div>`;
+}
+
+function renderDonut(bank,depot){
+  const svg=document.getElementById("donut-svg");
+  const legend=document.getElementById("donut-legend");
+  const total=bank+depot;
+  const segs=[];
+  if(bank>0)segs.push({val:bank,color:"#7c6bff",label:"Konten"});
+  if(depot>0)segs.push({val:depot,color:"#00d4a8",label:"Depot"});
+  let paths="",angle=-Math.PI/2;
+  segs.forEach(seg=>{
+    const slice=(seg.val/total)*Math.PI*2;
+    const x1=60+50*Math.cos(angle),y1=60+50*Math.sin(angle);
+    angle+=slice;
+    const x2=60+50*Math.cos(angle),y2=60+50*Math.sin(angle);
+    paths+=`<path d="M60,60 L${x1},${y1} A50,50 0 ${slice>Math.PI?1:0},1 ${x2},${y2} Z" fill="${seg.color}" opacity=".85"/>`;
+  });
+  svg.innerHTML=paths||'<circle cx="60" cy="60" r="50" fill="#2a3240"/>';
+  svg.innerHTML+=`<circle cx="60" cy="60" r="30" fill="#161b22"/>`;
+  legend.innerHTML=segs.map(s=>`<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div><div><div style="font-size:13px;font-weight:500">${s.label}</div><div style="font-size:12px;color:var(--text2)">${fmtEur(s.val)} (${fmt(s.val/total*100,1)}%)</div></div></div>`).join("");
+}
+
+function renderBarChart(){
+  const now=new Date();const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const key=d.toISOString().slice(0,7);
+    const label=d.toLocaleString("de-DE",{month:"short"});
+    const total=expenses.filter(e=>e.type==="expense"&&e.date.startsWith(key)).reduce((s,e)=>s+e.amount,0);
+    months.push({label,total});
+  }
+  const max=Math.max(...months.map(m=>m.total),1);
+  document.getElementById("bar-chart").innerHTML=months.map(m=>`<div class="bar-wrap" title="${fmtEur(m.total)}"><div class="bar" style="height:${Math.round(m.total/max*80)+4}px"></div><div class="bar-label">${m.label}</div></div>`).join("");
+}
+
+// ── Settings ──
+function saveSettings(){
+  const users=load("users")||{};
+  const key=document.getElementById("lu").value.trim().toLowerCase()||currentUser.toLowerCase();
+  const dn=document.getElementById("s-name").value.trim();
+  const p1=document.getElementById("s-p1").value;
+  const p2=document.getElementById("s-p2").value;
+  const msg=document.getElementById("s-msg");
+  if(dn){users[key].displayName=dn;currentUser=dn;document.getElementById("topbar-user").textContent=dn;}
+  if(p1){if(p1!==p2){msg.textContent="❌ Passwörter stimmen nicht überein.";msg.style.color="var(--red)";return;}users[key].password=p1;}
+  save("users",users);msg.textContent="✓ Gespeichert";msg.style.color="var(--accent)";setTimeout(()=>msg.textContent="",2000);
+}
+function clearAll(){if(!confirm("Alle Daten löschen?"))return;accounts=[];stocks=[];expenses=[];snapshots=[];save("accounts",[]);save("stocks",[]);save("expenses",[]);save("snapshots",[]);renderAll();}
+
+// ── Render All ──
+function renderAll(){
+  renderDashboard();renderAccounts();renderStocks();renderExpenses();
+}
+
+// Init month filter
+document.getElementById("month-filter").value=thisMonth();
+</script>
+</body>
+</html>
